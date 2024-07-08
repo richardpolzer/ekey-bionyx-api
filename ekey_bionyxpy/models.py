@@ -21,7 +21,7 @@ class Webhook:
         self._modification_state = data["modificationState"]
 
     async def get_update(self) -> None:
-        resp = await self._auth.request("get", f"systems/{self._system_id}/function-webhooks/{self._webhook_id}")
+        resp = await self._auth.request("GET", f"systems/{self._system_id}/function-webhooks/{self._webhook_id}")
         resp.raise_for_status()
         json_data = await resp.json()
         self._update_values(json_data)
@@ -58,17 +58,17 @@ class System:
         return self._own_system
 
     async def get_webhooks(self) -> list[Webhook]:
-        resp = await self._auth.request("get", f"systems/{self._system_id}/function-webhooks")
+        resp = await self._auth.request("GET", f"systems/{self._system_id}/function-webhooks")
         resp.raise_for_status()
         return [Webhook(wh_data, self._system_id, self._auth) for wh_data in await resp.json()]
 
     async def get_webhook(self, webhook_id: str) -> Webhook:
-        resp = await self._auth.request("get", f"systems/{self._system_id}/function-webhooks/{webhook_id}")
+        resp = await self._auth.request("GET", f"systems/{self._system_id}/function-webhooks/{webhook_id}")
         resp.raise_for_status()
         return Webhook(await resp.json(), self._system_id, self._auth)
 
     async def add_webhook(self, webhook_data: WebhookData) -> Webhook:
-        resp = await self._auth.request("post", f"systems/{self._system_id}/function-webhooks", json=webhook_data)
+        resp = await self._auth.request("POST", f"systems/{self._system_id}/function-webhooks", json=webhook_data)
         resp.raise_for_status()
         return Webhook(await resp.json(), self._system_id, self._auth)
 
@@ -90,6 +90,6 @@ class BionyxAPI:
         Returns:
             list[System]: List of Systems the user has access to
         """
-        resp = await self._auth.request("get", "systems")
+        resp = await self._auth.request("GET", "systems")
         resp.raise_for_status()
         return [System(system_data, self._auth) for system_data in await resp.json()]

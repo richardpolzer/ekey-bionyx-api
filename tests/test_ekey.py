@@ -7,6 +7,7 @@ from ekey_bionyxpy import BionyxAPI
 from ekey_bionyxpy import System
 from ekey_bionyxpy import SystemResponse
 from ekey_bionyxpy import Webhook
+from ekey_bionyxpy import WebhookData
 from ekey_bionyxpy import WebhookResponse
 
 
@@ -24,6 +25,21 @@ webhook_template: WebhookResponse = {
     "functionName": "A simple string containing 0 to 50 word, space and punctuation characters.",
     "expiresAt": "2022-05-16T04:11:28.0000000+00:00",
     "modificationState": None,
+}
+
+webhook_data_template: WebhookData = {
+    "integrationName": "Third Party",
+    "locationName": "A simple string containing 0 to 128 word, space and punctuation characters.",
+    "functionName": "A simple string containing 0 to 50 word, space and punctuation characters.",
+    "definition": {
+        "method": "Post",
+        "url": "https://www.rfc-editor.org/rfc/rfc3986.html",
+        "body": {"contentType": "application/json", "content": "string"},
+        "securityLevel": "AllowHttp",
+        "authentication": {
+            "apiAuthenticationType": "None",
+        },
+    },
 }
 
 
@@ -45,9 +61,7 @@ async def test_get_systems():
         m.get(f"{base_url}/systems", payload=[system_template])
         systems = await api.get_systems()
         comp_system = System(system_template, auth)
-        assert comp_system.system_id == systems[0].system_id
-        assert comp_system.system_name == systems[0].system_name
-        assert comp_system.own_system == systems[0].own_system
+        assert comp_system.__dict__ == systems[0].__dict__
         m.assert_called_once()
     await session.close()
 
@@ -73,11 +87,43 @@ async def test_get_webhooks():
         m.get(f"{base_url}/systems/{system_template['systemId']}/function-webhooks", payload=[webhook_template])
         webhooks = await (System(system_template, auth)).get_webhooks()
         comp_webhook = Webhook(webhook_template, system_template["systemId"], auth)
-        assert comp_webhook._expires_at == webhooks[0]._expires_at
-        assert comp_webhook._modification_state == webhooks[0]._modification_state
-        assert comp_webhook._system_id == webhooks[0]._system_id
-        assert comp_webhook._webhook_id == webhooks[0]._webhook_id
-        assert comp_webhook._webhook_function_name == webhooks[0]._webhook_function_name
-        assert comp_webhook._webhook_location_name == webhooks[0]._webhook_location_name
+        assert comp_webhook.__dict__ == webhooks[0].__dict__
         m.assert_called_once()
+    await session.close()
+
+
+@pytest.mark.asyncio
+async def test_get_webhook():
+    session = aiohttp.ClientSession()
+    auth = Auth(session, base_url, "not needed")
+    with aioresponses() as m:
+        m.get(
+            f"{base_url}/systems/{system_template['systemId']}/function-webhooks/{webhook_template["functionWebhookId"]}",
+            payload=webhook_template,
+        )
+        webhook = await (System(system_template, auth)).get_webhook(webhook_template["functionWebhookId"])
+        comp_webhook = Webhook(webhook_template, system_template["systemId"], auth)
+        assert comp_webhook.__dict__ == webhook.__dict__
+        m.assert_called_once()
+    await session.close()
+
+
+@pytest.mark.asyncio
+async def test_add_webhook():
+    session = aiohttp.ClientSession()
+    auth = Auth(session, base_url, "not needed")
+    with aioresponses() as m:
+        m.post(
+            f"{base_url}/systems/{system_template['systemId']}/function-webhooks",
+            payload=webhook_template,
+        )
+        webhook = await (System(system_template, auth)).add_webhook(webhook_data_template)
+        comp_webhook = Webhook(webhook_template, system_template["systemId"], auth)
+        assert comp_webhook.__dict__ == webhook.__dict__
+        m.assert_called_once_with(
+            "http://test.example.com/systems/946da01f-9abd-4d9d-80c7-02af85c822a8/function-webhooks",
+            method="post",
+            json=webhook_data_template,
+            headers={"authorization": "Bearer not needed"},
+        )
     await session.close()
