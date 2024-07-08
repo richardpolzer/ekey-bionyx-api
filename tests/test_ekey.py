@@ -42,6 +42,9 @@ webhook_data_template: WebhookData = {
     },
 }
 
+system_id = system_template["systemId"]
+webhook_id = webhook_template["functionWebhookId"]
+
 
 class Auth(AbstractAuth):
     def __init__(self, websession: aiohttp.ClientSession, host: str, token: str):
@@ -84,9 +87,9 @@ async def test_get_webhooks():
     session = aiohttp.ClientSession()
     auth = Auth(session, base_url, "not needed")
     with aioresponses() as m:
-        m.get(f"{base_url}/systems/{system_template['systemId']}/function-webhooks", payload=[webhook_template])
+        m.get(f"{base_url}/systems/{system_id}/function-webhooks", payload=[webhook_template])
         webhooks = await (System(system_template, auth)).get_webhooks()
-        comp_webhook = Webhook(webhook_template, system_template["systemId"], auth)
+        comp_webhook = Webhook(webhook_template, system_id, auth)
         assert comp_webhook.__dict__ == webhooks[0].__dict__
         m.assert_called_once()
     await session.close()
@@ -98,11 +101,11 @@ async def test_get_webhook():
     auth = Auth(session, base_url, "not needed")
     with aioresponses() as m:
         m.get(
-            f"{base_url}/systems/{system_template['systemId']}/function-webhooks/{webhook_template["functionWebhookId"]}",
+            f"{base_url}/systems/{system_id}/function-webhooks/{webhook_id}",
             payload=webhook_template,
         )
-        webhook = await (System(system_template, auth)).get_webhook(webhook_template["functionWebhookId"])
-        comp_webhook = Webhook(webhook_template, system_template["systemId"], auth)
+        webhook = await (System(system_template, auth)).get_webhook(webhook_id)
+        comp_webhook = Webhook(webhook_template, system_id, auth)
         assert comp_webhook.__dict__ == webhook.__dict__
         m.assert_called_once()
     await session.close()
@@ -114,14 +117,14 @@ async def test_add_webhook():
     auth = Auth(session, base_url, "not needed")
     with aioresponses() as m:
         m.post(
-            f"{base_url}/systems/{system_template['systemId']}/function-webhooks",
+            f"{base_url}/systems/{system_id}/function-webhooks",
             payload=webhook_template,
         )
         webhook = await (System(system_template, auth)).add_webhook(webhook_data_template)
-        comp_webhook = Webhook(webhook_template, system_template["systemId"], auth)
+        comp_webhook = Webhook(webhook_template, system_id, auth)
         assert comp_webhook.__dict__ == webhook.__dict__
         m.assert_called_once_with(
-            "http://test.example.com/systems/946da01f-9abd-4d9d-80c7-02af85c822a8/function-webhooks",
+            f"{base_url}/systems/{system_id}/function-webhooks",
             method="post",
             json=webhook_data_template,
             headers={"authorization": "Bearer not needed"},
