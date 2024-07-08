@@ -138,3 +138,6 @@ show_error_context = false
 show_column_numbers = false
 show_error_codes = true
 exclude = ["docs", "test", "tests"]
+
+[tool.pytest.ini_options]
+pythonpath = "."
