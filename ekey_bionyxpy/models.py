@@ -1,5 +1,6 @@
 """Module for interacting with the objects returned by the API."""
 
+from ._typing import FunctionQuotas
 from ._typing import SystemResponse
 from ._typing import WebhookData
 from ._typing import WebhookResponse
@@ -20,6 +21,26 @@ class Webhook:
         self._expires_at = data["expiresAt"]
         self._modification_state = data["modificationState"]
 
+    @property
+    def webhook_id(self) -> str:
+        return self._webhook_id
+
+    @property
+    def webhook_function_name(self) -> str:
+        return self._webhook_function_name
+
+    @property
+    def webhook_location_name(self) -> str:
+        return self._webhook_location_name
+
+    @property
+    def expires_at(self) -> str:
+        return self._expires_at
+
+    @property
+    def modification_state(self) -> str:
+        return self._modification_state
+
     async def get_update(self) -> None:
         resp = await self._auth.request("GET", f"systems/{self._system_id}/function-webhooks/{self._webhook_id}")
         resp.raise_for_status()
@@ -28,21 +49,26 @@ class Webhook:
         print(str(self.__dict__))
 
     async def delete(self) -> None:
-        resp = await self._auth.request("delete", f"systems/{self._system_id}/function-webhooks/{self._webhook_id}")
+        resp = await self._auth.request("DELETE", f"systems/{self._system_id}/function-webhooks/{self._webhook_id}")
         resp.raise_for_status()
         self._modification_state = "DeleteRequested"
 
     async def update(self, webhook_data: WebhookData) -> None:
-        resp = await self._auth.request("put", f"systems/{self._system_id}/function-webhooks", json=webhook_data)
+        resp = await self._auth.request(
+            "PUT", f"systems/{self._system_id}/function-webhooks/{self._webhook_id}", json=webhook_data
+        )
         resp.raise_for_status()
         self._modification_state = "UpdateRequested"
 
 
 class System:
+    """Class for interacting with a single system."""
+
     def __init__(self, raw_data: SystemResponse, auth: AbstractAuth):
         self._system_id = raw_data["systemId"]
         self._system_name = raw_data["systemName"]
         self._own_system = raw_data["ownSystem"]
+        self._function_webhook_quotas = raw_data["functionWebhookQuotas"]
         self._auth = auth
 
     @property
@@ -57,17 +83,46 @@ class System:
     def own_system(self) -> bool:
         return self._own_system
 
+    @property
+    def function_webhook_quotas(self) -> FunctionQuotas:
+        return self._function_webhook_quotas
+
     async def get_webhooks(self) -> list[Webhook]:
+        """Getting all the webhooks in the system that were set by this client_id.
+
+        Returns:
+            list[Webhook]: registered Webhooks
+        """
         resp = await self._auth.request("GET", f"systems/{self._system_id}/function-webhooks")
         resp.raise_for_status()
         return [Webhook(wh_data, self._system_id, self._auth) for wh_data in await resp.json()]
 
     async def get_webhook(self, webhook_id: str) -> Webhook:
+        """Gets the webhook with the provided id.
+
+        Args:
+            webhook_id (str): ID of the webhook
+
+        Returns:
+            Webhook: registerd Webhook
+
+        Raises:
+            aiohttp.ClientResponseError: If `Unauthorized - Authorization failed`
+            or `Forbidden - Invalid or expired authentication token` or `Not Found`
+        """
         resp = await self._auth.request("GET", f"systems/{self._system_id}/function-webhooks/{webhook_id}")
         resp.raise_for_status()
         return Webhook(await resp.json(), self._system_id, self._auth)
 
     async def add_webhook(self, webhook_data: WebhookData) -> Webhook:
+        """Adds a new webhook with the provided data.
+
+        Args:
+            webhook_data (WebhookData): Data of the Webhook
+
+        Returns:
+            Webhook: registerd webhook
+        """
         resp = await self._auth.request("POST", f"systems/{self._system_id}/function-webhooks", json=webhook_data)
         resp.raise_for_status()
         return Webhook(await resp.json(), self._system_id, self._auth)

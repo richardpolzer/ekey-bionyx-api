@@ -14,7 +14,7 @@ class SystemResponse(TypedDict):
     systemName: str
     systemId: str
     ownSystem: bool
-    functionWebhookQuotas: NotRequired[FunctionQuotas]
+    functionWebhookQuotas: FunctionQuotas
 
 
 class WebhookResponse(TypedDict):

@@ -25,6 +25,7 @@ class AbstractAuth(ABC):
             headers = {}
         else:
             headers = dict(headers)
+            del kwargs["headers"]
 
         access_token = await self.async_get_access_token()
         headers["authorization"] = f"Bearer {access_token}"

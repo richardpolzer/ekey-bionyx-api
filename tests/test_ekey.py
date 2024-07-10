@@ -15,6 +15,7 @@ system_template: SystemResponse = {
     "systemName": "TESTSYSTEM",
     "systemId": "946da01f-9abd-4d9d-80c7-02af85c822a8",
     "ownSystem": True,
+    "functionWebhookQuotas": {"free": 5, "used": 0},
 }
 base_url = "http://test.example.com"
 
@@ -56,6 +57,33 @@ class Auth(AbstractAuth):
 
 
 @pytest.mark.asyncio
+async def test_request_with_headers():
+    session = aiohttp.ClientSession()
+    auth = Auth(session, base_url, "not needed")
+    with aioresponses() as m:
+        m.get(f"{base_url}")
+        resp = await auth.request("GET", "", headers={"test": "test"})
+        resp.raise_for_status()
+        m.assert_called_once_with(
+            f"{base_url}",
+            method="get",
+            headers={"authorization": "Bearer not needed", "test": "test"},
+        )
+    await session.close()
+
+
+@pytest.mark.asyncio
+async def test_system():  # noqa: RUF029
+    session = aiohttp.ClientSession()
+    auth = Auth(session, base_url, "not needed")
+    system = System(system_template, auth)
+    assert system.system_id == system_template["systemId"]
+    assert system.system_name == system_template["systemName"]
+    assert system.own_system == system_template["ownSystem"]
+    assert system.function_webhook_quotas == system_template["functionWebhookQuotas"]
+
+
+@pytest.mark.asyncio
 async def test_get_systems():
     session = aiohttp.ClientSession()
     auth = Auth(session, base_url, "not needed")
@@ -80,6 +108,18 @@ async def test_unauthorized():
             await api.get_systems()
         m.assert_called_once()
     await session.close()
+
+
+@pytest.mark.asyncio
+async def test_webhook():  # noqa: RUF029
+    session = aiohttp.ClientSession()
+    auth = Auth(session, base_url, "not needed")
+    webhook = Webhook(webhook_template, system_id, auth)
+    assert webhook.webhook_id == webhook_template["functionWebhookId"]
+    assert webhook.webhook_function_name == webhook_template["functionName"]
+    assert webhook.webhook_location_name == webhook_template["locationName"]
+    assert webhook.expires_at == webhook_template["expiresAt"]
+    assert webhook.modification_state == webhook_template["modificationState"]
 
 
 @pytest.mark.asyncio
@@ -126,6 +166,61 @@ async def test_add_webhook():
         m.assert_called_once_with(
             f"{base_url}/systems/{system_id}/function-webhooks",
             method="post",
+            json=webhook_data_template,
+            headers={"authorization": "Bearer not needed"},
+        )
+    await session.close()
+
+
+@pytest.mark.asyncio
+async def test_webhook_get_update():
+    session = aiohttp.ClientSession()
+    auth = Auth(session, base_url, "not needed")
+    with aioresponses() as m:
+        m.get(
+            f"{base_url}/systems/{system_id}/function-webhooks/{webhook_id}",
+            payload=webhook_template,
+        )
+        webhook = Webhook(webhook_template, system_id, auth)
+        webhook._webhook_function_name = "Test"
+        assert webhook._webhook_function_name == "Test"
+        await webhook.get_update()
+        comp_webhook = Webhook(webhook_template, system_id, auth)
+        assert comp_webhook.__dict__ == webhook.__dict__
+        m.assert_called_once()
+    await session.close()
+
+
+@pytest.mark.asyncio
+async def test_webhook_delete():
+    session = aiohttp.ClientSession()
+    auth = Auth(session, base_url, "not needed")
+
+    with aioresponses() as m:
+        m.delete(f"{base_url}/systems/{system_id}/function-webhooks/{webhook_id}")
+        webhook = Webhook(webhook_template, system_id, auth)
+        await webhook.delete()
+        assert webhook._modification_state == "DeleteRequested"
+        m.assert_called_once_with(
+            f"{base_url}/systems/{system_id}/function-webhooks/{webhook_id}",
+            method="delete",
+            headers={"authorization": "Bearer not needed"},
+        )
+    await session.close()
+
+
+@pytest.mark.asyncio
+async def test_webhook_update():
+    session = aiohttp.ClientSession()
+    auth = Auth(session, base_url, "not needed")
+    with aioresponses() as m:
+        m.put(f"{base_url}/systems/{system_id}/function-webhooks/{webhook_id}")
+        webhook = Webhook(webhook_template, system_id, auth)
+        await webhook.update(webhook_data_template)
+        assert webhook._modification_state == "UpdateRequested"
+        m.assert_called_once_with(
+            f"{base_url}/systems/{system_id}/function-webhooks/{webhook_id}",
+            method="put",
             json=webhook_data_template,
             headers={"authorization": "Bearer not needed"},
         )
