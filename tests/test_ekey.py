@@ -8,6 +8,7 @@ from ekey_bionyxpy import System
 from ekey_bionyxpy import SystemResponse
 from ekey_bionyxpy import Webhook
 from ekey_bionyxpy import WebhookData
+from ekey_bionyxpy import WebhookRename
 from ekey_bionyxpy import WebhookResponse
 
 
@@ -42,6 +43,8 @@ webhook_data_template: WebhookData = {
         },
     },
 }
+
+webhook_patch_data: WebhookRename = {"functionName": "A simple string", "locationName": "0 to 50 word"}
 
 system_id = system_template["systemId"]
 webhook_id = webhook_template["functionWebhookId"]
@@ -222,6 +225,23 @@ async def test_webhook_update():
             f"{base_url}/systems/{system_id}/function-webhooks/{webhook_id}",
             method="put",
             json=webhook_data_template,
+            headers={"authorization": "Bearer not needed"},
+        )
+    await session.close()
+
+
+@pytest.mark.asyncio
+async def test_webhook_patch():
+    session = aiohttp.ClientSession()
+    auth = Auth(session, base_url, "not needed")
+    with aioresponses() as m:
+        m.patch(f"{base_url}/systems/{system_id}/function-webhooks/{webhook_id}")
+        webhook = Webhook(webhook_template, system_id, auth)
+        await webhook.update_name(webhook_patch_data)
+        m.assert_called_once_with(
+            f"{base_url}/systems/{system_id}/function-webhooks/{webhook_id}",
+            method="patch",
+            json=webhook_patch_data,
             headers={"authorization": "Bearer not needed"},
         )
     await session.close()

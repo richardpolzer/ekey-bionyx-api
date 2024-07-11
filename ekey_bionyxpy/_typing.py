@@ -88,3 +88,8 @@ class WebhookData(TypedDict):
     expiresAt: NotRequired[str]
     modificationState: NotRequired[str]
     definition: WebhookDefinition
+
+
+class WebhookRename(TypedDict):
+    locationName: NotRequired[str]
+    functionName: NotRequired[str]

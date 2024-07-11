@@ -3,11 +3,14 @@
 from ._typing import FunctionQuotas
 from ._typing import SystemResponse
 from ._typing import WebhookData
+from ._typing import WebhookRename
 from ._typing import WebhookResponse
 from .auth import AbstractAuth
 
 
 class Webhook:
+    """Class for interacting with webhooks."""
+
     def __init__(self, raw_data: WebhookResponse, system_id: str, auth: AbstractAuth) -> None:
         self._system_id = system_id
         self._auth = auth
@@ -42,23 +45,40 @@ class Webhook:
         return self._modification_state
 
     async def get_update(self) -> None:
+        """Gets the current version of the webhook as stored in the ekey system."""
         resp = await self._auth.request("GET", f"systems/{self._system_id}/function-webhooks/{self._webhook_id}")
         resp.raise_for_status()
         json_data = await resp.json()
         self._update_values(json_data)
-        print(str(self.__dict__))
 
     async def delete(self) -> None:
+        """Requests deletion of the webhook. User needs to confirm."""
         resp = await self._auth.request("DELETE", f"systems/{self._system_id}/function-webhooks/{self._webhook_id}")
         resp.raise_for_status()
         self._modification_state = "DeleteRequested"
 
     async def update(self, webhook_data: WebhookData) -> None:
+        """Updates the definition of the webhook. User needs to confirm.
+
+        Args:
+            webhook_data (WebhookData): The new data for the webhook.
+        """
         resp = await self._auth.request(
             "PUT", f"systems/{self._system_id}/function-webhooks/{self._webhook_id}", json=webhook_data
         )
         resp.raise_for_status()
         self._modification_state = "UpdateRequested"
+
+    async def update_name(self, webhook_data: WebhookRename) -> None:
+        """Renames the webhook. User does not need to confirm.
+
+        Args:
+            webhook_data (WebhookRename): The new name and location
+        """
+        resp = await self._auth.request(
+            "PATCH", f"systems/{self._system_id}/function-webhooks/{self._webhook_id}", json=webhook_data
+        )
+        resp.raise_for_status()
 
 
 class System:
