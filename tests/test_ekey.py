@@ -2,14 +2,14 @@ import aiohttp
 import pytest
 from aioresponses import aioresponses
 
-from ekeybionyxpy import AbstractAuth
-from ekeybionyxpy import BionyxAPI
-from ekeybionyxpy import System
-from ekeybionyxpy import SystemResponse
-from ekeybionyxpy import Webhook
-from ekeybionyxpy import WebhookData
-from ekeybionyxpy import WebhookRename
-from ekeybionyxpy import WebhookResponse
+from ekey_bionyxpy import AbstractAuth
+from ekey_bionyxpy import BionyxAPI
+from ekey_bionyxpy import System
+from ekey_bionyxpy import SystemResponse
+from ekey_bionyxpy import Webhook
+from ekey_bionyxpy import WebhookData
+from ekey_bionyxpy import WebhookRename
+from ekey_bionyxpy import WebhookResponse
 
 
 system_template: SystemResponse = {
