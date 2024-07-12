@@ -1,4 +1,5 @@
 # API for the ekey bionyx system - Python
+[![Lint & Test](https://github.com/richardpolzer/ekey-bionyx-api/actions/workflows/lint_test.yml/badge.svg?branch=main)](https://github.com/richardpolzer/ekey-bionyx-api/actions/workflows/lint_test.yml)
 
 ## Overview
 
