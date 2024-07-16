@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ekey-bionyxpy"
+description= "Interact with the bionyx third party API of the ekey biometric systems."
 version = "0.0.3"
 readme = "README.md"
 dependencies = ["aiohttp"]
