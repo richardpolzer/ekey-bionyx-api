@@ -1,5 +1,11 @@
 """Module for interacting with the objects returned by the API."""
 
+from enum import Enum
+from typing import Any
+from typing import Literal
+from typing import NotRequired
+from typing import TypedDict
+
 from .auth import AbstractAuth
 
 
