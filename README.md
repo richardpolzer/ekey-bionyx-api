@@ -2,6 +2,8 @@
 
 [![Lint & Test](https://github.com/richardpolzer/ekey-bionyx-api/actions/workflows/lint_test.yml/badge.svg?branch=main)](https://github.com/richardpolzer/ekey-bionyx-api/actions/workflows/lint_test.yml)
 [![codecov](https://codecov.io/github/richardpolzer/ekey-bionyx-api/branch/main/graph/badge.svg?token=MXJCFJZO5I)](https://codecov.io/github/richardpolzer/ekey-bionyx-api)
+[![PyPI - Version](https://img.shields.io/pypi/v/ekey-bionyxpy)](https://pypi.org/project/ekey-bionyxpy)
+
 
 ## Overview
 
