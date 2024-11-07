@@ -15,7 +15,6 @@ class Webhook:
         self._system_id = system_id
         self._auth = auth
         self._update_values(raw_data)
-        print(str(self.__dict__))
 
     def _update_values(self, data: WebhookResponse) -> None:
         self._webhook_id = data["functionWebhookId"]
