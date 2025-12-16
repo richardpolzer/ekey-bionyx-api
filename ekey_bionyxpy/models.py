@@ -166,7 +166,7 @@ class Webhook:
             webhook_data (WebhookRename): The new name and location
         """
         resp = await self._auth.request(
-            "PATCH", f"systems/{self._system_id}/function-webhooks/{self._webhook_id}", json=webhook_data
+            "PATCH", f"systems/{self._system_id}/function-webhooks/{self._webhook_id}/name", json=webhook_data
         )
         resp.raise_for_status()
 
