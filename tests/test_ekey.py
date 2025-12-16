@@ -235,11 +235,11 @@ async def test_webhook_patch():
     session = aiohttp.ClientSession()
     auth = Auth(session, base_url, "not needed")
     with aioresponses() as m:
-        m.patch(f"{base_url}/systems/{system_id}/function-webhooks/{webhook_id}")
+        m.patch(f"{base_url}/systems/{system_id}/function-webhooks/{webhook_id}/name")
         webhook = Webhook(webhook_template, system_id, auth)
         await webhook.update_name(webhook_patch_data)
         m.assert_called_once_with(
-            f"{base_url}/systems/{system_id}/function-webhooks/{webhook_id}",
+            f"{base_url}/systems/{system_id}/function-webhooks/{webhook_id}/name",
             method="patch",
             json=webhook_patch_data,
             headers={"authorization": "Bearer not needed"},
