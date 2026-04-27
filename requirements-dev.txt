@@ -1,6 +1,6 @@
 # Packaging
 # python -m pip install -U pip
-build>=1.2.1
+build>=1.4.4
 twine>=5.1.0
 setuptools>=70.2.0
 virtualenv>=20.26.3
