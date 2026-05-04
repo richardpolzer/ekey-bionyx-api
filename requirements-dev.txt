@@ -2,7 +2,7 @@
 # python -m pip install -U pip
 build>=1.4.4
 twine>=6.2.0
-setuptools>=70.2.0
+setuptools>=82.0.1
 virtualenv>=20.26.3
 
 # Linting/Formatting
