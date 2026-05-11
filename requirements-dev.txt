@@ -12,7 +12,7 @@ isort>=5.13.2
 
 # Tooling
 pre-commit>=4.6.0
-nbqa>=1.8.4
+nbqa>=1.9.1
 
 # Type Checker
 mypy>=1.10.1
