@@ -19,7 +19,7 @@ mypy>=2.0.0
 mypy-extensions>=1.1.0
 
 # Testing
-pytest>=8.2.2
+pytest>=9.0.3
 pytest-cov>=7.1.0
 pytest-benchmark>=5.2.3
 codecov>=2.1.13
